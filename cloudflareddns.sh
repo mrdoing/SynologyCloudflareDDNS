@@ -37,6 +37,16 @@ listDnsApi="https://api.cloudflare.com/client/v4/zones/${username}/dns_records?t
 # above only, if IPv4 and/or IPv6 is provided
 listDnsv6Api="https://api.cloudflare.com/client/v4/zones/${username}/dns_records?type=${recType6}&name=${hostname}" # if only IPv4 is provided
 
+# Function to stop IPFS daemon
+stopIPFS() {
+    ipfs shutdown
+}
+
+# Function to start IPFS daemon
+startIPFS() {
+    ipfs daemon &
+}
+
 res=$(curl -s -X GET "$listDnsApi" -H "Authorization: Bearer $password" -H "Content-Type:application/json")
 resSuccess=$(echo "$res" | jq -r ".success")
 
@@ -95,6 +105,9 @@ resSuccess=$(echo "$res" | jq -r ".success")
 
 if [[ $resSuccess = "true" ]] || [[ $res6Success = "true" ]]; then
     echo "good";
+    # 在更新完 DNS 记录后，且新 IP 与当前 IP 不同的情况下，执行 IPFS 服务的重启操作
+        stopIPFS
+        startIPFS
 else
     echo "badauth";
 fi
